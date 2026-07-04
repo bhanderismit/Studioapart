@@ -7,7 +7,7 @@ function Hub({ resident, onSharePass, onCopy }) {
   const [copied, setCopied] = React.useState(null);     // last copied label, for transient highlight
   const [hours, setHours] = React.useState(24);
 
-  const wifi = { ssid: "Uni-Stays Resident", password: "haslang2026", channel: "5 GHz" };
+  const wifi = { ssid: "Studioapart Resident", password: "haslang2026", channel: "5 GHz" };
   const door = { code: "4127", lift: "4B" };
 
   const copy = (text, label) => {

@@ -85,7 +85,7 @@ function SettingsScreen({ prefs, onChange, onBack, theme, onSetTheme }) {
         <div className="set-row" onClick={() => toggle("marketing")}>
           <div className="ic"><Icon name="megaphone" size={16} /></div>
           <div className="body">
-            <div className="l">From Uni-Stays HQ</div>
+            <div className="l">From Studioapart HQ</div>
             <div className="s">Other buildings, new openings</div>
           </div>
           <button className={`switch ${prefs.marketing ? "on" : ""}`} aria-pressed={prefs.marketing} />
@@ -215,7 +215,7 @@ function DocumentSheet({ docId, resident, rent, onClose }) {
     agreement: {
       title: "Stay agreement",
       eyebrow: "Signed 18 Sep 2025 · 4 pages",
-      body: `Between Uni-Stays GmbH and ${resident.firstName} ${resident.lastName}, this agreement covers Studio 4B at Haslangstraße 12, Ingolstadt, for the period ${resident.moveIn} through ${resident.moveOut}.\n\nMonthly rate: €${rent.amount} all-inclusive (base rent, utilities, internet, community fund).\n\nDeposit: €1 098, held in a separated trust account at Sparkasse Ingolstadt, returned within 30 days of move-out.\n\nNotice period: 30 days, in writing, via the app's inbox.`,
+      body: `Between Studioapart GmbH and ${resident.firstName} ${resident.lastName}, this agreement covers Studio 4B at Haslangstraße 12, Ingolstadt, for the period ${resident.moveIn} through ${resident.moveOut}.\n\nMonthly rate: €${rent.amount} all-inclusive (base rent, utilities, internet, community fund).\n\nDeposit: €1 098, held in a separated trust account at Sparkasse Ingolstadt, returned within 30 days of move-out.\n\nNotice period: 30 days, in writing, via the app's inbox.`,
       ic: "file-text"
     },
     enrolment: {
@@ -339,7 +339,7 @@ function SignOutSheet({ onConfirm, onClose }) {
         }}>
           <Icon name="log-out" size={28} />
         </div>
-        <h2 style={{ fontFamily: "var(--us-font-display)", fontWeight: 700, fontSize: 22, color: "var(--us-navy-900)", margin: 0, letterSpacing: "-0.02em" }}>Sign out of Uni-Stays?</h2>
+        <h2 style={{ fontFamily: "var(--us-font-display)", fontWeight: 700, fontSize: 22, color: "var(--us-navy-900)", margin: 0, letterSpacing: "-0.02em" }}>Sign out of Studioapart?</h2>
         <p style={{ fontSize: 13, color: "var(--us-fg-muted)", margin: "8px 28px 18px", lineHeight: 1.5 }}>
           You'll be signed out on this device. You can come back in with your stay email and the 6-digit code we sent you on move-in day.
         </p>

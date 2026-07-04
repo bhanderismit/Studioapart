@@ -1,4 +1,4 @@
-// Shared primitives for the Uni-Stays resident app.
+// Shared primitives for the Studioapart resident app.
 
 // ─── Lucide icon ─────────────────────────────────────────────
 function Icon({ name, size = 20, color, strokeWidth = 2, style }) {
@@ -58,13 +58,17 @@ function AppBar({ resident, theme, onToggleTheme, onBrandTap, daysLeft, stayDay,
         aria-label="Building status">
 
         <div className="mark">
-          U
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
+            <path d="M4 10.8 L12 4.2 L20 10.8" stroke="var(--us-mustard-500)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6.2 9.6 V20 H17.8 V9.6" stroke="#f4f0ea" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M9.8 20 V13.8 H14.2 V20" stroke="var(--us-mustard-500)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           <span className="mark-pulse" />
         </div>
         <div className="brand-text">
           {!showStatus ?
           <React.Fragment>
-              <span className="b1">Uni-Stays</span>
+              <span className="b1">Studioapart</span>
               <span className="b2">{resident.building}</span>
             </React.Fragment> :
 
@@ -503,7 +507,7 @@ function ConciergeAsk({ resident, onToast }) {
       const reply = await window.claude.complete({
         messages: [{
           role: "user",
-          content: `You are Magda, the warm-but-direct building manager at Uni-Stays Haslangstraße 12 in Ingolstadt, Germany. The resident is ${resident?.firstName || "Lena"}, a student at Technische Hochschule Ingolstadt. Reply to their question in 2-3 short sentences, conversational tone, no formatting, sign off occasionally with "— Magda" but not always. If the question is about the building, answer as if you know it well. If it's about Ingolstadt, give honest local advice. Question: ${question}`,
+          content: `You are Magda, the warm-but-direct building manager at Studioapart Haslangstraße 12 in Ingolstadt, Germany. The resident is ${resident?.firstName || "Lena"}, a student at Technische Hochschule Ingolstadt. Reply to their question in 2-3 short sentences, conversational tone, no formatting, sign off occasionally with "— Magda" but not always. If the question is about the building, answer as if you know it well. If it's about Ingolstadt, give honest local advice. Question: ${question}`,
         }],
       });
       setAnswer(reply || "Hmm, no signal — try again in a bit.");

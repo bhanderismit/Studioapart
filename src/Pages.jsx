@@ -216,7 +216,7 @@ function BuildingMap({ resident, onBack, onPoiTap }) {
       <g>
         {/* HOSTEL sign */}
         <rect x="155" y="294" width="120" height="28" rx="6" fill="#ff7236" stroke="#0e2233" strokeWidth="2.5" />
-        <text x="215" y="313" fontSize="14" fontWeight="900" fill="#0e2233" textAnchor="middle" letterSpacing="0.12em">UNI-STAYS</text>
+        <text x="215" y="313" fontSize="14" fontWeight="900" fill="#0e2233" textAnchor="middle" letterSpacing="0.12em">STUDIOAPART</text>
         <line x1="200" y1="322" x2="200" y2="330" stroke="#0e2233" strokeWidth="2" strokeLinecap="round" />
         <line x1="230" y1="322" x2="230" y2="330" stroke="#0e2233" strokeWidth="2" strokeLinecap="round" />
 

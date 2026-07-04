@@ -182,12 +182,7 @@ body {
   box-shadow: 0 6px 16px -6px rgba(14,34,51,0.5);
 }
 .appbar .brand .mark::after {
-  content: "";
-  position: absolute;
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--us-mustard-500);
-  right: 4px; bottom: 4px;
-  box-shadow: 0 0 12px rgba(255,114,54,0.65);
+  content: none;
 }
 .appbar .brand-text {
   display: flex; flex-direction: column; line-height: 1;

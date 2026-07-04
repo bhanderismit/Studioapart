@@ -366,7 +366,7 @@ function Home({
 
       <div className="home-foot">
         <span className="sig">—</span>
-        Uni-Stays · {resident.building}, {resident.city}
+        Studioapart · {resident.building}, {resident.city}
       </div>
     </React.Fragment>);
 

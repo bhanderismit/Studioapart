@@ -489,7 +489,7 @@ function Stay({ resident, rent, tickets, onOpenPass, onOpenDoc, onOpenSettings, 
       </div>
 
       <div style={{ textAlign: "center", marginTop: 16, fontSize: 11, color: "var(--us-fg-muted)" }}>
-        Uni-Stays · v2.4 · {resident.building}
+        Studioapart · v2.4 · {resident.building}
       </div>
     </React.Fragment>
   );

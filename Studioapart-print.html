@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Uni-Stays — Print</title>
+<title>Studioapart — Print</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="src/styles.css">
 <style>
@@ -210,7 +210,7 @@ function StaticFrame({ initialTab = "home", openEvent = null, openAnnc = null, o
 
   return (
     <IOSDevice width={390} height={844}>
-      <div className="app" data-screen-label={`Uni-Stays · ${tab}`}>
+      <div className="app" data-screen-label={`Studioapart · ${tab}`}>
         {screen}
         {!openEvent && !openAnnc && !openTicket && !stayScreen && !signedOut && (
           <TabBar active={tab} onChange={noop} onQuickAction={noop} />
@@ -272,7 +272,7 @@ function PrintRun() {
       {PAGES.map((p) => (
         <div key={p.num} className="print-page">
           <div className="print-label">
-            <div className="num">Uni-Stays · {p.num}</div>
+            <div className="num">Studioapart · {p.num}</div>
             <div className="name">{p.name}</div>
             <div className="desc">{p.desc}</div>
           </div>
