@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uni-Stays — resident app</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+
+<script src="src/data.js"></script>
+
+<script type="text/babel" src="src/ios-frame.jsx"></script>
+<script type="text/babel" src="src/primitives.jsx"></script>
+<script type="text/babel" src="src/tweaks-panel.jsx"></script>
+<script type="text/babel" src="src/Home.jsx"></script>
+<script type="text/babel" src="src/Tabs.jsx"></script>
+<script type="text/babel" src="src/Hub.jsx"></script>
+<script type="text/babel" src="src/Detail.jsx"></script>
+<script type="text/babel" src="src/Extras.jsx"></script>
+<script type="text/babel" src="src/Pages.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+
+const { useState, useEffect, useRef } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "darkMode": false,
+  "accent": "#ff7236",
+  "density": "comfy",
+  "animatedEvents": true,
+  "showStats": true,
+  "theme": "light",
+  "greeting": "You're 47 days into a quiet winter at Haslangstraße."
+}/*EDITMODE-END*/;
+
+function App() {
+  const { RESIDENT, RENT, PULSE, EVENTS, ANNOUNCEMENTS, FACILITIES, MATES, MAINTENANCE_TYPES } = window.DATA;
+
+  const [tab, setTab] = useState("home");
+  const [stayScreen, setStayScreen] = useState(null); // 'settings' | null  (pushed within Stay)
+  const [openEvent, setOpenEvent] = useState(null);
+  const [openAnnc, setOpenAnnc] = useState(null);
+  const [openTicket, setOpenTicket] = useState(null);
+  const [sheet, setSheet] = useState(null); // 'rent' | 'maint' | 'quick' | 'pass' | 'doc:agreement' | 'language' | 'signout' | null
+  const [toast, setToast] = useState(null);
+  const [going, setGoing] = useState({ lounge: true }); // event id -> bool — start with one RSVP
+  const [reservations, setReservations] = useState([
+  // Pre-seeded so the "Your week" lane has content on load
+  {
+    id: "r-seed-1",
+    facility: FACILITIES.find((f) => f.id === "seminar"),
+    time: "16:00",
+    dayLabel: "Wed 24 Nov"
+  }]
+  );
+  const [tickets, setTickets] = useState([
+  {
+    id: "t-seed-1",
+    title: "Bathroom door catches when closing",
+    body: "The bathroom door scrapes the frame when I shut it — needs a shave or a hinge adjust. Not urgent, just annoying.",
+    where: "Bathroom",
+    timeAgo: "yesterday",
+    status: "progress",
+    icon: "wrench"
+  }]
+  );
+  const [unread, setUnread] = useState(2);
+  const [rentPaid, setRentPaid] = useState(false);
+  const [signedOut, setSignedOut] = useState(false);
+  const [language, setLanguage] = useState("en");
+  const [compose, setCompose] = useState(null);     // { to, placeholder, target?: 'announcement'|'ticket', targetId? } | null
+  const [threadMessages, setThreadMessages] = useState({});   // ticketId/anncId -> [{who, text, time}]
+  const [waved, setWaved] = useState({});
+  const [eventsAllOpen, setEventsAllOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false); // mate name -> true (timed out)
+  const [prefs, setPrefs] = useState({
+    events: true, building: true, rent: false, chat: true,
+    marketing: false, quiet: true, showFloor: true, eventsPublic: true
+  });
+
+  // Theme: 'light' | 'dark' | 'auto' — auto follows system
+  const [theme, setTheme] = useState("light");
+  const systemDark = typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+  const effectiveTheme = theme === "auto" ? systemDark ? "dark" : "light" : theme;
+
+  // Pull-to-refresh
+  const refresh = (done) => {
+    setTimeout(() => {
+      showToast({ title: "Fresh from Haslangstraße", body: "Lounge: 2 people · gym: open · lift: working", icon: "refresh-cw" });
+      done?.();
+    }, 1100);
+  };
+  const ptr = usePullToRefresh(refresh);
+
+  const onWaveMate = (mate) => {
+    setWaved((w) => ({ ...w, [mate.name]: true }));
+    showToast({ title: `Waved at ${mate.name}`, body: mate.state === "online" ? "Delivered · they'll get a ping" : "Saved · they'll see it next time online", icon: "hand" });
+    setTimeout(() => {
+      setWaved((w) => {const n = { ...w };delete n[mate.name];return n;});
+    }, 2500);
+  };
+
+  const screenRef = useRef(null);
+
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Apply tweaks to CSS variables on the app root
+  useEffect(() => {
+    const root = document.querySelector(".app");
+    if (!root) return;
+    root.style.setProperty("--us-primary", tweaks.accent);
+    root.style.setProperty("--us-mustard-500", tweaks.accent);
+    root.style.setProperty("--us-primary-hover", tweaks.accent);
+  }, [tweaks.accent]);
+
+  const showToast = (t) => {
+    setToast(t);
+    setTimeout(() => setToast(null), 3200);
+  };
+
+  const onRSVP = (id) => {
+    setGoing((g) => {
+      const next = { ...g, [id]: !g[id] };
+      if (!g[id]) {
+        showToast({ title: "You're in.", body: "Added to your stay calendar — Mira will be glad.", icon: "check" });
+      }
+      return next;
+    });
+  };
+
+  const onOpenAnnouncement = (a) => {
+    setOpenAnnc(a);
+    if (a.unread) setUnread((u) => Math.max(0, u - 1));
+  };
+
+  const onReserve = (facility, time) => {
+    const day = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+    const dayLabel = `${day[today.getDay()]} ${today.getDate()} ${today.toLocaleString("en-GB", { month: "short" })}`;
+    setReservations((rs) => [...rs, {
+      id: "r-" + Date.now(),
+      facility,
+      time,
+      dayLabel
+    }]);
+    showToast({
+      title: `${facility.name} · ${time}`,
+      body: "Saved · cancel up to 30 min before",
+      icon: "calendar-check"
+    });
+    setTab("home");
+  };
+
+  const onCancelReservation = (id) => {
+    setReservations((rs) => rs.filter((r) => r.id !== id));
+    showToast({ title: "Reservation cancelled", body: "Slot is back in the pool", icon: "x" });
+  };
+
+  const onPayRent = () => {
+    setRentPaid(true);
+    setSheet(null);
+    showToast({ title: "Rent's sorted.", body: "Receipt on its way to your inbox.", icon: "check" });
+  };
+
+  const onMaintenance = (data) => {
+    const typeInfo = MAINTENANCE_TYPES.find((t) => t.id === data.type);
+    setTickets((ts) => [{
+      id: "t-" + Date.now(),
+      title: typeInfo ? `${typeInfo.l} — ${data.body.split(/[.!?]/)[0].slice(0, 60).trim()}` : data.body.split(/[.!?]/)[0].slice(0, 60).trim(),
+      body: data.body,
+      where: data.where,
+      urgency: data.urgency,
+      timeAgo: "just now",
+      status: "open",
+      icon: typeInfo?.ic || "wrench"
+    }, ...ts]);
+    setSheet(null);
+    showToast({ title: "We're on it.", body: "Magda picked it up — ETA 2 h", icon: "wrench" });
+  };
+
+  const onQuickPick = (id) => {
+    setSheet(null);
+    if (id === "maint") setTimeout(() => setSheet("maint"), 200);else
+    if (id === "facility") setTimeout(() => setTab("facility"), 200);else
+    if (id === "concierge") setTimeout(() => showToast({ title: "Pinged Magda", body: "She'll reply in your inbox", icon: "message-circle" }), 200);else
+    if (id === "guest") setTimeout(() => showToast({ title: "Guest QR ready", body: "Valid 24 h · Magda has been notified", icon: "user-plus" }), 200);else
+    if (id === "lockout") setTimeout(() => showToast({ title: "Front desk alerted", body: "Someone's on the way — wait at your door", icon: "key-round" }), 200);
+  };
+
+  const effectiveRent = rentPaid ?
+  { ...RENT, status: "paid", history: RENT.history.map((m) => m.month === "Dec" ? { ...m, state: "paid" } : m) } :
+  RENT;
+
+  // Show all the rent in the home view if not paid - allow toggle off via tweak
+  const showStats = tweaks.showStats !== false;
+
+  // Re-style events if motion disabled
+  useEffect(() => {
+    if (!tweaks.animatedEvents) {
+      document.querySelectorAll(".gfx-disc, .gfx-reps span, .gfx-steam span, .gfx-film, .stay-hero .live, .gfx-path .dot").
+      forEach((el) => {el.style.animationPlayState = "paused";});
+    } else {
+      document.querySelectorAll(".gfx-disc, .gfx-reps span, .gfx-steam span, .gfx-film, .stay-hero .live, .gfx-path .dot").
+      forEach((el) => {el.style.animationPlayState = "running";});
+    }
+  }, [tweaks.animatedEvents, tab, openEvent]);
+
+  let screen;
+  if (signedOut) {
+    screen = <SignedOutScreen onSignIn={() => {setSignedOut(false);setTab("home");}} />;
+  } else if (openEvent) {
+    screen =
+    <EventDetail
+      event={openEvent}
+      going={!!going[openEvent.id]}
+      onBack={() => setOpenEvent(null)}
+      onRSVP={onRSVP} />;
+
+
+  } else if (openAnnc) {
+    screen = <AnnouncementDetail annc={openAnnc} onBack={() => setOpenAnnc(null)} onReply={(to) => setCompose({ to, target: "announcement", targetId: openAnnc.id, placeholder: `Reply to ${to}…` })} />;
+  } else if (openTicket) {
+    screen = <TicketDetail ticket={openTicket} onBack={() => setOpenTicket(null)} extraMessages={threadMessages[openTicket.id] || []} onReply={(to) => setCompose({ to, target: "ticket", targetId: openTicket.id, placeholder: `Reply about request #${openTicket.id.slice(-4).toUpperCase()}` })} />;
+  } else if (eventsAllOpen) {
+    screen = <EventsAll events={EVENTS} going={going} onOpenEvent={setOpenEvent} onBack={() => setEventsAllOpen(false)} onHost={() => setSheet("host")} />;
+  } else if (mapOpen) {
+    screen = <BuildingMap resident={RESIDENT} onBack={() => setMapOpen(false)} onPoiTap={(p) => showToast({ title: p.label, body: "Tap-through coming soon", icon: "info" })} />;
+  } else if (stayScreen === "settings") {
+    screen = <SettingsScreen prefs={prefs} onChange={setPrefs} onBack={() => setStayScreen(null)} theme={theme} onSetTheme={setTheme} />;
+  } else if (tab === "home") {
+    screen =
+    <React.Fragment>
+        <AppBar
+        resident={RESIDENT}
+       
+        theme={effectiveTheme}
+        onToggleTheme={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")}
+       
+        stayDay={RESIDENT.stayDay}
+        stayLength={RESIDENT.stayLength}
+        daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={unread} onOpenInbox={() => setTab("messages")} />
+      
+        <div className={`pull-indicator ${ptr.pull > 0 ? "active" : ""} ${ptr.refreshing ? "refreshing" : ""}`} style={{ top: ptr.refreshing ? 80 : Math.max(-50, ptr.pull - 50) + "px", opacity: ptr.pull > 5 || ptr.refreshing ? 1 : 0 }}>
+          <Icon name="refresh-cw" size={18} />
+        </div>
+        <div className="screen screen-enter" ref={ptr.ref} data-screen-label="01 Home">
+          <Home
+          resident={RESIDENT}
+          rent={effectiveRent}
+          pulse={showStats ? PULSE : []}
+          events={EVENTS}
+          announcements={ANNOUNCEMENTS}
+          facilities={FACILITIES}
+          mates={MATES}
+          reservations={reservations}
+          going={going}
+          waved={waved}
+          greeting={tweaks.greeting}
+          onWaveMate={onWaveMate}
+          onOpenEvent={setOpenEvent}
+          onOpenAnnouncement={onOpenAnnouncement}
+          onOpenRent={() => setSheet("rent")}
+          onOpenAutopay={() => setSheet("autopay")}
+          onOpenFacility={() => setTab("facility")}
+          onOpenAllEvents={() => setEventsAllOpen(true)}
+          onOpenMap={() => setMapOpen(true)}
+          onCancelReservation={onCancelReservation}
+          onRefresh={refresh}
+          onTabChange={setTab} />
+        
+        </div>
+      </React.Fragment>;
+
+  } else if (tab === "messages") {
+    screen =
+    <React.Fragment>
+        <AppBar resident={RESIDENT} theme={effectiveTheme} onToggleTheme={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")} stayDay={RESIDENT.stayDay} stayLength={RESIDENT.stayLength} daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={unread} onOpenInbox={() => setTab("messages")} />
+        <div className="screen screen-enter" data-screen-label="02 Inbox">
+          <Inbox announcements={ANNOUNCEMENTS} tickets={tickets} onOpen={onOpenAnnouncement} onOpenTicket={setOpenTicket} onMarkAllRead={() => { setUnread(0); showToast({ title: "Inbox cleared", body: "Marked everything as read", icon: "check-check" }); }} />
+        </div>
+      </React.Fragment>;
+
+  } else if (tab === "hub") {
+    screen =
+    <React.Fragment>
+        <AppBar resident={RESIDENT} theme={effectiveTheme} onToggleTheme={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")} stayDay={RESIDENT.stayDay} stayLength={RESIDENT.stayLength} daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={unread} onOpenInbox={() => setTab("messages")} />
+        <div className="screen screen-enter" data-screen-label="05 Hub">
+          <Hub
+            resident={RESIDENT}
+            onSharePass={(name) => showToast({ title: `Guest pass for ${name}`, body: "Live for 24h · Magda notified", icon: "ticket" })}
+            onCopy={(label) => showToast({ title: "Copied", body: label, icon: "copy" })} />
+        </div>
+      </React.Fragment>;
+
+  } else if (tab === "facility") {
+    screen =
+    <React.Fragment>
+        <AppBar resident={RESIDENT} theme={effectiveTheme} onToggleTheme={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")} stayDay={RESIDENT.stayDay} stayLength={RESIDENT.stayLength} daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={unread} onOpenInbox={() => setTab("messages")} />
+        <div className="screen screen-enter" data-screen-label="03 Book">
+          <Booking facilities={FACILITIES} reservations={reservations} onReserve={onReserve} onCancel={onCancelReservation} />
+        </div>
+      </React.Fragment>;
+
+  } else if (tab === "stay") {
+    screen =
+    <React.Fragment>
+        <AppBar resident={RESIDENT} theme={effectiveTheme} onToggleTheme={() => setTheme(effectiveTheme === "dark" ? "light" : "dark")} stayDay={RESIDENT.stayDay} stayLength={RESIDENT.stayLength} daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={unread} onOpenInbox={() => setTab("messages")} />
+        <div className="screen screen-enter" data-screen-label="04 Stay">
+          <Stay
+          resident={RESIDENT}
+          rent={effectiveRent}
+          tickets={tickets}
+          onOpenTicket={setOpenTicket}
+          onOpenPass={() => setSheet("pass")}
+          onOpenDoc={(id) => setSheet(`doc:${id}`)}
+          onOpenSettings={() => setStayScreen("settings")}
+          onOpenLanguage={() => setSheet("language")}
+          onSignOut={() => setSheet("signout")} />
+        
+        </div>
+      </React.Fragment>;
+
+  }
+
+  // Sheet content
+  let sheetContent = null;
+  if (sheet === "rent") sheetContent = <RentSheet rent={effectiveRent} onPay={onPayRent} onClose={() => setSheet(null)} />;else
+  if (sheet === "maint") sheetContent = <MaintenanceSheet types={MAINTENANCE_TYPES} onSubmit={onMaintenance} onClose={() => setSheet(null)} />;else
+  if (sheet === "quick") sheetContent = <QuickSheet onPick={onQuickPick} onClose={() => setSheet(null)} />;else
+  if (sheet === "pass") sheetContent = <PassSheet resident={RESIDENT} onClose={() => setSheet(null)} />;else
+  if (sheet?.startsWith("doc:")) sheetContent = <DocumentSheet docId={sheet.slice(4)} resident={RESIDENT} rent={effectiveRent} onClose={() => setSheet(null)} />;else
+  if (sheet === "language") sheetContent = <LanguageSheet value={language} onPick={(c) => {setLanguage(c);setSheet(null);showToast({ title: { en: "Language: English", de: "Sprache: Deutsch", fr: "Langue: Français", es: "Idioma: Español", it: "Lingua: Italiano" }[c] || "Language switched", body: "Some labels update — full translation rolling out", icon: "languages" });}} onClose={() => setSheet(null)} />;else
+  if (sheet === "signout") sheetContent = <SignOutSheet onConfirm={() => {setSheet(null);setSignedOut(true);setTab("home");}} onClose={() => setSheet(null)} />;else
+  if (sheet === "autopay") sheetContent = <AutopaySheet rent={effectiveRent} onClose={() => setSheet(null)} onSave={(cfg) => {setSheet(null);showToast({ title: cfg.enabled ? "Autopay armed" : "Autopay off", body: cfg.enabled ? `${cfg.method === "sepa" ? "SEPA" : "Card"} · charges on day ${cfg.day}` : "You'll need to pay manually each month", icon: cfg.enabled ? "zap" : "alert-circle" });}} />;else
+  if (sheet === "host") sheetContent = <HostSheet onClose={() => setSheet(null)} onCreate={(cfg) => {setSheet(null);showToast({ title: `"${cfg.name}" published`, body: `${cfg.where} · ${cfg.when} · cap ${cfg.cap}`, icon: "sparkles" });}} />;
+
+  // Override greeting text in Home via DOM after render (simple way to make the tweak persist)
+  // No longer needed — greeting is now passed as a prop. Keeping useEffect placeholder removed.
+
+  return (
+    <React.Fragment>
+      <IOSDevice width={390} height={844} dark={effectiveTheme === "dark"}>
+        <div
+          className="app"
+          data-screen-label={`Uni-Stays · ${openEvent ? "Event" : openAnnc ? "Announcement" : tab}`}
+          data-theme={effectiveTheme}
+          style={{
+            // density just tightens vertical rhythm slightly
+            ["--us-s-section"]: tweaks.density === "compact" ? "18px" : "28px"
+          }}>
+          
+          {screen}
+          {!openEvent && !openAnnc && !openTicket && !stayScreen && !signedOut && !eventsAllOpen && !mapOpen &&
+          <TabBar
+            active={tab}
+            onChange={(t) => {setStayScreen(null);setTab(t);}}
+            onQuickAction={() => setSheet("quick")}
+            unread={unread}
+            language={language} />
+
+          }
+          <Sheet open={!!sheet} onClose={() => setSheet(null)}>
+            {sheetContent}
+          </Sheet>
+          {toast && <Toast toast={toast} />}
+          {compose && (
+            <Compose
+              to={compose.to}
+              placeholder={compose.placeholder}
+              onClose={() => setCompose(null)}
+              onSend={(text) => {
+                if (compose.target === "ticket" && compose.targetId) {
+                  setThreadMessages((tm) => ({
+                    ...tm,
+                    [compose.targetId]: [
+                      ...(tm[compose.targetId] || []),
+                      { who: "you", text, time: "just now" },
+                      { who: "magda", text: "Got it — I'll come up after lunch.", time: "a moment later" },
+                    ],
+                  }));
+                }
+                setCompose(null);
+                showToast({ title: `Sent to ${compose.to}`, body: text.length > 40 ? text.slice(0, 40) + "…" : text, icon: "send" });
+              }}
+            />
+          )}
+        </div>
+      </IOSDevice>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Look">
+          <TweakColor
+            label="Brand accent"
+            value={tweaks.accent}
+            onChange={(v) => setTweak("accent", v)}
+            options={["#ff7236", "#d2222d", "#3a5f6b", "#238823", "#9333ea"]} />
+          
+          <TweakRadio
+            label="Theme"
+            value={theme}
+            onChange={setTheme}
+            options={[
+            { value: "light", label: "Light" },
+            { value: "dark", label: "Dark" },
+            { value: "auto", label: "Auto" }]
+            } />
+          
+          <TweakRadio
+            label="Density"
+            value={tweaks.density}
+            onChange={(v) => setTweak("density", v)}
+            options={[
+            { value: "comfy", label: "Comfy" },
+            { value: "compact", label: "Compact" }]
+            } />
+          
+          <TweakToggle
+            label="Motion on events"
+            value={tweaks.animatedEvents}
+            onChange={(v) => setTweak("animatedEvents", v)} />
+          
+          <TweakToggle
+            label="Show building pulse"
+            value={tweaks.showStats}
+            onChange={(v) => setTweak("showStats", v)} />
+          
+        </TweakSection>
+        <TweakSection label="Copy">
+          <TweakText
+            label="Welcome line"
+            value={tweaks.greeting}
+            onChange={(v) => setTweak("greeting", v)} />
+          
+        </TweakSection>
+        <TweakSection label="Jump to">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            <TweakButton label="Home" onClick={() => {setOpenEvent(null);setOpenAnnc(null);setOpenTicket(null);setStayScreen(null);setTab("home");}} />
+            <TweakButton label="Hub" onClick={() => {setOpenEvent(null);setOpenAnnc(null);setOpenTicket(null);setStayScreen(null);setTab("hub");}} />
+            <TweakButton label="Inbox" onClick={() => {setOpenEvent(null);setOpenAnnc(null);setOpenTicket(null);setStayScreen(null);setTab("messages");}} />
+            <TweakButton label="Booking" onClick={() => {setOpenEvent(null);setOpenAnnc(null);setOpenTicket(null);setStayScreen(null);setTab("facility");}} />
+            <TweakButton label="Stay" onClick={() => {setOpenEvent(null);setOpenAnnc(null);setOpenTicket(null);setStayScreen(null);setTab("stay");}} />
+            <TweakButton label="Event" onClick={() => setOpenEvent(window.DATA.EVENTS[0])} />
+            <TweakButton label="Rent" onClick={() => setSheet("rent")} />
+            <TweakButton label="Maintenance" onClick={() => setSheet("maint")} />
+            <TweakButton label="Quick" onClick={() => setSheet("quick")} />
+            <TweakButton label="Pass QR" onClick={() => setSheet("pass")} />
+            <TweakButton label="Settings" onClick={() => {setTab("stay");setStayScreen("settings");}} />
+            <TweakButton label="Language" onClick={() => setSheet("language")} />
+            <TweakButton label="Sign out" onClick={() => setSheet("signout")} />
+          </div>
+        </TweakSection>
+      </TweaksPanel>
+    </React.Fragment>);
+
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>

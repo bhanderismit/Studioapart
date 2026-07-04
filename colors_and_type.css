@@ -1,0 +1,321 @@
+/* =============================================================
+   Uni-Stays — Foundations
+   Colors + Type tokens. Import this anywhere in the system.
+   ============================================================= */
+
+/* ---------- Fonts ----------
+   All families self-hosted from /fonts (uploaded by the user).     */
+
+/* Plus Jakarta Sans — display family (H1-H4, hero) */
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 200; font-display: swap; src: url("./fonts/PlusJakartaSans-ExtraLight.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 200; font-display: swap; src: url("./fonts/PlusJakartaSans-ExtraLightItalic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 300; font-display: swap; src: url("./fonts/PlusJakartaSans-Light.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 300; font-display: swap; src: url("./fonts/PlusJakartaSans-LightItalic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/PlusJakartaSans-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 400; font-display: swap; src: url("./fonts/PlusJakartaSans-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/PlusJakartaSans-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 500; font-display: swap; src: url("./fonts/PlusJakartaSans-MediumItalic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/PlusJakartaSans-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 600; font-display: swap; src: url("./fonts/PlusJakartaSans-SemiBoldItalic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/PlusJakartaSans-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 700; font-display: swap; src: url("./fonts/PlusJakartaSans-BoldItalic.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 800; font-display: swap; src: url("./fonts/PlusJakartaSans-ExtraBold.ttf") format("truetype"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-style: italic; font-weight: 800; font-display: swap; src: url("./fonts/PlusJakartaSans-ExtraBoldItalic.ttf") format("truetype"); }
+
+/* Inter — 18pt optical size covers body and UI weights cleanly.
+   Files live under /fonts/ at the project root.                    */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100; font-display: swap; src: url("./fonts/Inter_18pt-Thin.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 100; font-display: swap; src: url("./fonts/Inter_18pt-ThinItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 200; font-display: swap; src: url("./fonts/Inter_18pt-ExtraLight.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 200; font-display: swap; src: url("./fonts/Inter_18pt-ExtraLightItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 300; font-display: swap; src: url("./fonts/Inter_18pt-Light.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 300; font-display: swap; src: url("./fonts/Inter_18pt-LightItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/Inter_18pt-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("./fonts/Inter_18pt-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/Inter_18pt-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 500; font-display: swap; src: url("./fonts/Inter_18pt-MediumItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/Inter_18pt-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 600; font-display: swap; src: url("./fonts/Inter_18pt-SemiBoldItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/Inter_18pt-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 700; font-display: swap; src: url("./fonts/Inter_18pt-BoldItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("./fonts/Inter_18pt-ExtraBold.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 800; font-display: swap; src: url("./fonts/Inter_18pt-ExtraBoldItalic.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 900; font-display: swap; src: url("./fonts/Inter_18pt-Black.ttf") format("truetype"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 900; font-display: swap; src: url("./fonts/Inter_18pt-BlackItalic.ttf") format("truetype"); }
+
+/* Inter Display — 28pt optical size, for headings and oversized
+   moments where the larger optical sets the eye nicer.             */
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/Inter_28pt-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/Inter_28pt-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/Inter_28pt-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/Inter_28pt-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 800; font-display: swap; src: url("./fonts/Inter_28pt-ExtraBold.ttf") format("truetype"); }
+@font-face { font-family: "Inter Display"; font-style: normal; font-weight: 900; font-display: swap; src: url("./fonts/Inter_28pt-Black.ttf") format("truetype"); }
+
+:root {
+  /* ---------- Brand palette ----------
+     A confident sunset orange leads (primary CTAs, the spark in
+     the logo) and a deep ink-navy carries the chrome (top bar,
+     headings, body text). One warm hue + one cool depth.        */
+
+  /* INK NAVY — secondary / chrome (variable names preserved as
+     "navy" for backwards compatibility with the kits).          */
+  --us-navy-900:   #050d18;   /* deepest                         */
+  --us-navy-800:   #081627;   /* hovers on dark surfaces         */
+  --us-navy-700:   #0e2233;   /* SECONDARY BRAND · top bar, h1   */
+  --us-navy-600:   #1b3144;   /* pressed                         */
+  --us-navy-100:   #d8dee6;   /* ink wash for tags               */
+  --us-navy-050:   #eef1f5;
+
+  /* PETROL — muted support tone (variable names preserved as
+     "teal" — used sparingly for info states and borders).      */
+  --us-teal-900:   #1a3138;
+  --us-teal-700:   #2c4953;
+  --us-teal-600:   #3a5f6b;
+  --us-teal-500:   #5a7d88;
+  --us-teal-300:   #b3c5cb;
+  --us-teal-100:   #dde4e7;
+  --us-teal-050:   #f1f4f6;
+
+  /* ORANGE — PRIMARY (variable names preserved as "mustard"). */
+  --us-mustard-900: #7a2d10;
+  --us-mustard-800: #b04220;
+  --us-mustard-700: #e35418;  /* pressed primary                 */
+  --us-mustard-600: #f2622a;  /* hover primary                   */
+  --us-mustard-500: #ff7236;  /* PRIMARY BRAND · CTA, logo stroke */
+  --us-mustard-300: #ffb594;
+  --us-mustard-200: #ffd2bc;
+  --us-mustard-100: #fff0e6;
+  --us-mustard-050: #fff7f1;
+
+  /* ---------- Neutrals ---------- */
+  --us-ink-900:    #16181d;   /* near-black text                */
+  --us-ink-800:    #1d1b20;   /* body strong                    */
+  --us-ink-700:    #2b2f38;
+  --us-ink-600:    #565360;   /* secondary text (figma)         */
+  --us-ink-500:    #79747e;   /* helper / placeholder           */
+  --us-ink-400:    #908e9b;   /* disabled, micro-meta           */
+  --us-ink-300:    #cac4d0;   /* borders                        */
+  --us-ink-200:    #e0e0e0;   /* hairlines                      */
+  --us-ink-100:    #ecedf1;   /* card hover fill                */
+  --us-ink-050:    #f6f5f8;   /* page surface                   */
+  --us-white:      #ffffff;
+  --us-canvas:     #fffaf5;   /* warm cream page bg              */
+
+  /* ---------- Semantic ---------- */
+  --us-success-700: #1f6f1f;
+  --us-success-500: #238823;  /* "Ready for Move-in"            */
+  --us-success-100: #e1f4e1;
+  --us-warning-700: #b04a00;
+  --us-warning-500: #e76a14;  /* "Waitlist Only"                */
+  --us-warning-100: #ffe1cc;
+  --us-danger-700:  #9b1822;
+  --us-danger-500:  #d2222d;  /* "Fully Booked"                 */
+  --us-danger-100:  #fde0e2;
+  --us-info-700:    #2c4953;
+  --us-info-500:    #3a5f6b;
+  --us-info-100:    #dde4e7;
+
+  /* ---------- Semantic aliases (use these in components) ---------- */
+  --us-bg:           var(--us-canvas);
+  --us-bg-elevated:  var(--us-white);
+  --us-bg-sunken:    var(--us-ink-050);
+  --us-surface-teal: rgba(255,114,54,0.10);   /* warm orange wash for heroes */
+  --us-surface-warm: rgba(255,114,54,0.06);
+
+  --us-fg:           var(--us-ink-900);
+  --us-fg-muted:     var(--us-ink-600);
+  --us-fg-subtle:    var(--us-ink-500);
+  --us-fg-disabled:  var(--us-ink-400);
+  --us-fg-inverse:   var(--us-white);
+
+  /* PRIMARY = orange (the CTA color, the brand spark).         */
+  --us-primary:        var(--us-mustard-500);
+  --us-primary-hover:  var(--us-mustard-600);
+  --us-primary-press:  var(--us-mustard-700);
+  --us-primary-fg:     var(--us-navy-900);   /* dark text on orange */
+
+  /* SECONDARY = ink-navy (the chrome, top bar, headings).      */
+  --us-secondary:      var(--us-navy-700);
+  --us-secondary-hover:var(--us-navy-800);
+  --us-secondary-press:var(--us-navy-900);
+  --us-secondary-fg:   var(--us-white);
+
+  /* Legacy "accent" alias = same as primary in the new system. */
+  --us-accent:         var(--us-mustard-500);
+  --us-accent-hover:   var(--us-mustard-600);
+  --us-accent-fg:      var(--us-navy-900);
+
+  --us-border:         var(--us-ink-300);
+  --us-border-strong:  var(--us-ink-700);
+  --us-divider:        var(--us-ink-200);
+
+  /* ---------- Typography ---------- */
+  --us-font-sans:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --us-font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  /* Type scale — desktop. Pair with --us-lh-* line heights.       */
+  --us-fs-display: 64px;     /* hero – marketing only */
+  --us-fs-h1:      48px;     /* page hero             */
+  --us-fs-h2:      32px;
+  --us-fs-h3:      24px;
+  --us-fs-h4:      20px;
+  --us-fs-body-lg: 18px;     /* property descriptions */
+  --us-fs-body:    16px;
+  --us-fs-body-sm: 14px;     /* metadata              */
+  --us-fs-caption: 12px;
+  --us-fs-micro:   11px;
+
+  --us-lh-tight:   1.10;
+  --us-lh-display: 1.20;
+  --us-lh-snug:    1.30;
+  --us-lh-body:    1.50;
+  --us-lh-meta:    1.40;
+
+  --us-fw-regular:  400;
+  --us-fw-medium:   500;
+  --us-fw-semibold: 600;
+  --us-fw-bold:     700;
+  --us-fw-black:    800;
+
+  --us-tracking-tight: -0.02em;
+  --us-tracking-snug:  -0.01em;
+  --us-tracking-normal: 0;
+  --us-tracking-wide:  0.04em;     /* eyebrows / labels */
+  --us-tracking-mega:  0.12em;     /* all-caps labels   */
+
+  /* ---------- Spacing (4 / 8 grid) ---------- */
+  --us-s-1:  4px;
+  --us-s-2:  8px;
+  --us-s-3: 12px;
+  --us-s-4: 16px;
+  --us-s-5: 20px;
+  --us-s-6: 24px;
+  --us-s-7: 32px;
+  --us-s-8: 40px;
+  --us-s-9: 48px;
+  --us-s-10:64px;
+  --us-s-11:80px;
+  --us-s-12:96px;
+
+  /* ---------- Radii ---------- */
+  --us-radius-xs:  4px;
+  --us-radius-sm:  8px;     /* buttons, chips    */
+  --us-radius-md: 12px;     /* cards, modals     */
+  --us-radius-lg: 16px;     /* hero card / sheet */
+  --us-radius-xl: 24px;
+  --us-radius-pill: 999px;
+
+  /* ---------- Elevation ----------
+     Card shadow uses a tinted teal (figma rgba(63,124,136,0.25))
+     to keep cards feeling warm, not grey.                        */
+  --us-shadow-1: 0 1px 2px rgba(14,34,51,0.06);
+  --us-shadow-2: 0 2px 6px rgba(255,114,54,0.10), 0 1px 2px rgba(14,34,51,0.06);
+  --us-shadow-3: 0 4px 13px rgba(255,114,54,0.16), 0 1px 2px rgba(14,34,51,0.06);
+  --us-shadow-4: 0 12px 28px rgba(14,34,51,0.18), 0 4px 10px rgba(255,114,54,0.10);
+  --us-shadow-focus: 0 0 0 3px rgba(255,114,54,0.32);
+  --us-shadow-inner: inset 0 1px 0 rgba(255,255,255,0.6);
+
+  /* ---------- Motion ---------- */
+  --us-ease:       cubic-bezier(0.2, 0.7, 0.2, 1);
+  --us-ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --us-dur-fast:   120ms;
+  --us-dur:        200ms;
+  --us-dur-slow:   360ms;
+
+  /* ---------- Layout grid ---------- */
+  --us-grid-cols-desktop: 12;
+  --us-grid-gutter-desktop: 24px;
+  --us-grid-margin-desktop: 80px;
+  --us-grid-cols-mobile: 4;
+  --us-grid-gutter-mobile: 16px;
+  --us-grid-margin-mobile: 16px;
+  --us-container: 1240px;
+}
+
+/* =============================================================
+   Semantic type classes — drop directly on elements
+   ============================================================= */
+
+.us-display,
+.us-h1,
+.us-h2,
+.us-h3,
+.us-h4 {
+  font-family: var(--us-font-display);
+  color: var(--us-fg);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.us-display {
+  font-size: var(--us-fs-display);
+  font-weight: var(--us-fw-black);
+  line-height: var(--us-lh-tight);
+  letter-spacing: var(--us-tracking-tight);
+}
+.us-h1 {
+  font-size: var(--us-fs-h1);
+  font-weight: var(--us-fw-bold);
+  line-height: var(--us-lh-display);
+  letter-spacing: var(--us-tracking-tight);
+}
+.us-h2 {
+  font-size: var(--us-fs-h2);
+  font-weight: var(--us-fw-semibold);
+  line-height: 1.30;
+  letter-spacing: var(--us-tracking-snug);
+}
+.us-h3 {
+  font-size: var(--us-fs-h3);
+  font-weight: var(--us-fw-semibold);
+  line-height: 1.35;
+  letter-spacing: var(--us-tracking-snug);
+}
+.us-h4 {
+  font-size: var(--us-fs-h4);
+  font-weight: var(--us-fw-semibold);
+  line-height: 1.40;
+}
+
+.us-eyebrow {
+  font-family: var(--us-font-sans);
+  font-size: var(--us-fs-caption);
+  font-weight: var(--us-fw-semibold);
+  letter-spacing: var(--us-tracking-mega);
+  text-transform: uppercase;
+  color: var(--us-mustard-700);
+}
+
+.us-body-lg,
+.us-body,
+.us-body-sm,
+.us-caption,
+.us-meta {
+  font-family: var(--us-font-sans);
+  color: var(--us-fg);
+  margin: 0;
+}
+.us-body-lg  { font-size: var(--us-fs-body-lg); line-height: var(--us-lh-body); font-weight: var(--us-fw-regular); }
+.us-body     { font-size: var(--us-fs-body);    line-height: var(--us-lh-body); font-weight: var(--us-fw-regular); }
+.us-body-sm  { font-size: var(--us-fs-body-sm); line-height: var(--us-lh-meta); font-weight: var(--us-fw-medium); color: var(--us-fg-muted); }
+.us-caption  { font-size: var(--us-fs-caption); line-height: var(--us-lh-meta); font-weight: var(--us-fw-medium); color: var(--us-fg-muted); }
+.us-meta     { font-size: var(--us-fs-micro);   line-height: 1.30;              font-weight: var(--us-fw-medium); color: var(--us-fg-subtle); letter-spacing: 0.02em; }
+
+.us-mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+/* =============================================================
+   Page reset for design-system previews
+   ============================================================= */
+.us-reset {
+  font-family: var(--us-font-sans);
+  font-size: var(--us-fs-body);
+  line-height: var(--us-lh-body);
+  color: var(--us-fg);
+  background: var(--us-bg);
+  -webkit-font-smoothing: antialiased;
+}

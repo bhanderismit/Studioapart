@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uni-Stays — Print</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="src/styles.css">
+<style>
+  /* Print page sized to roughly iPhone 15 Pro aspect ratio + label */
+  @page { size: 130mm 280mm; margin: 0; }
+
+  html, body {
+    background: #f4f0ea;
+    margin: 0; padding: 0;
+  }
+  body {
+    display: block;
+    min-height: auto;
+    background: #f4f0ea !important;
+    background-image: none !important;
+  }
+
+  .print-page {
+    width: 130mm;
+    height: 280mm;
+    padding: 12mm 0 6mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8mm;
+    break-after: page;
+    page-break-after: always;
+    background: #f4f0ea;
+    box-sizing: border-box;
+  }
+  .print-page:last-child { break-after: auto; page-break-after: auto; }
+
+  .print-label {
+    text-align: center;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    color: #0e2233;
+  }
+  .print-label .num {
+    font-size: 9pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #ff7236;
+    text-transform: uppercase;
+  }
+  .print-label .name {
+    font-size: 13pt;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-top: 2pt;
+  }
+  .print-label .desc {
+    font-size: 8.5pt;
+    color: rgba(14,34,51,0.55);
+    margin-top: 1pt;
+    font-family: "Inter", system-ui, sans-serif;
+    max-width: 110mm;
+  }
+
+  .print-frame {
+    transform: scale(0.86);
+    transform-origin: top center;
+    margin-bottom: -16mm; /* clawback for scaled height */
+  }
+
+  /* Hide interactive scrollbars in print */
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* Pause animations so the print snapshot is stable */
+  *, *::before, *::after {
+    animation-play-state: paused !important;
+    transition: none !important;
+  }
+
+  @media print {
+    html, body { background: white !important; }
+    .print-page {
+      background: white !important;
+      width: 130mm; height: 280mm;
+      page-break-after: always;
+    }
+    /* Force color print */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+
+<script>window.__SKIP_AUTOPRINT = location.search.includes("noprint");</script>
+<script src="src/data.js"></script>
+
+<script type="text/babel" src="src/ios-frame.jsx"></script>
+<script type="text/babel" src="src/primitives.jsx"></script>
+<script type="text/babel" src="src/Home.jsx"></script>
+<script type="text/babel" src="src/Tabs.jsx"></script>
+<script type="text/babel" src="src/Detail.jsx"></script>
+<script type="text/babel" src="src/Extras.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useEffect } = React;
+
+// A single static frame — mounts the app's render tree with seed state.
+function StaticFrame({ initialTab = "home", openEvent = null, openAnnc = null, openTicket = null,
+                       stayScreen = null, sheet = null, going = { lounge: true }, signedOut = false }) {
+  const { RESIDENT, RENT, PULSE, EVENTS, ANNOUNCEMENTS, FACILITIES, MATES, MAINTENANCE_TYPES } = window.DATA;
+
+  const [tab] = useState(initialTab);
+  const noop = () => {};
+  const prefs = {
+    events: true, building: true, rent: false, chat: true,
+    marketing: false, quiet: true, showFloor: true, eventsPublic: true,
+  };
+
+  const reservations = [{
+    id: "r-seed-1",
+    facility: FACILITIES.find((f) => f.id === "seminar"),
+    time: "16:00",
+    dayLabel: "Wed 24 Nov",
+  }];
+  const tickets = [{
+    id: "t-seed-1",
+    title: "Bathroom door catches when closing",
+    body: "The bathroom door scrapes the frame when I shut it — needs a shave or a hinge adjust. Not urgent, just annoying.",
+    where: "Bathroom",
+    timeAgo: "yesterday",
+    status: "progress",
+    icon: "wrench",
+  }];
+
+  let screen;
+  if (signedOut) {
+    screen = <SignedOutScreen onSignIn={noop} />;
+  } else if (openEvent) {
+    screen = <EventDetail event={openEvent} going={!!going[openEvent.id]} onBack={noop} onRSVP={noop} />;
+  } else if (openAnnc) {
+    screen = <AnnouncementDetail annc={openAnnc} onBack={noop} />;
+  } else if (openTicket) {
+    screen = <TicketDetail ticket={openTicket} onBack={noop} />;
+  } else if (stayScreen === "settings") {
+    screen = <SettingsScreen prefs={prefs} onChange={noop} onBack={noop} />;
+  } else if (tab === "home") {
+    screen = (
+      <React.Fragment>
+        <AppBar resident={RESIDENT} unread={2} onBell={noop} onAvatar={noop} />
+        <div className="screen" data-screen-label="01 Home">
+          <Home
+            resident={RESIDENT} rent={RENT} pulse={PULSE} events={EVENTS}
+            announcements={ANNOUNCEMENTS} facilities={FACILITIES} mates={MATES}
+            reservations={reservations} going={going}
+            onOpenEvent={noop} onOpenAnnouncement={noop} onOpenRent={noop}
+            onOpenFacility={noop} onOpenAllEvents={noop} onOpenMap={noop}
+            onCancelReservation={noop} onTabChange={noop} onWaveMate={noop}
+          />
+        </div>
+      </React.Fragment>
+    );
+  } else if (tab === "messages") {
+    screen = (
+      <React.Fragment>
+        <AppBar resident={RESIDENT} unread={2} onBell={noop} onAvatar={noop} />
+        <div className="screen" data-screen-label="02 Inbox">
+          <Inbox announcements={ANNOUNCEMENTS} tickets={tickets} onOpen={noop} onOpenTicket={noop} />
+        </div>
+      </React.Fragment>
+    );
+  } else if (tab === "facility") {
+    screen = (
+      <React.Fragment>
+        <AppBar resident={RESIDENT} unread={2} onBell={noop} onAvatar={noop} />
+        <div className="screen" data-screen-label="03 Book">
+          <Booking facilities={FACILITIES} reservations={reservations} onReserve={noop} onCancel={noop} />
+        </div>
+      </React.Fragment>
+    );
+  } else if (tab === "stay") {
+    screen = (
+      <React.Fragment>
+        <AppBar resident={RESIDENT} unread={2} onBell={noop} onAvatar={noop} />
+        <div className="screen" data-screen-label="04 Stay">
+          <Stay
+            resident={RESIDENT} rent={RENT} tickets={tickets}
+            onOpenTicket={noop} onOpenPass={noop} onOpenDoc={noop}
+            onOpenSettings={noop} onOpenLanguage={noop} onSignOut={noop}
+          />
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  let sheetContent = null;
+  if (sheet === "rent")              sheetContent = <RentSheet rent={RENT} onPay={noop} onClose={noop} />;
+  else if (sheet === "maint")        sheetContent = <MaintenanceSheet types={MAINTENANCE_TYPES} onSubmit={noop} onClose={noop} />;
+  else if (sheet === "quick")        sheetContent = <QuickSheet onPick={noop} onClose={noop} />;
+  else if (sheet === "pass")         sheetContent = <PassSheet resident={RESIDENT} onClose={noop} />;
+  else if (sheet?.startsWith("doc:")) sheetContent = <DocumentSheet docId={sheet.slice(4)} resident={RESIDENT} rent={RENT} onClose={noop} />;
+  else if (sheet === "language")     sheetContent = <LanguageSheet value="en" onPick={noop} onClose={noop} />;
+  else if (sheet === "signout")      sheetContent = <SignOutSheet onConfirm={noop} onClose={noop} />;
+
+  return (
+    <IOSDevice width={390} height={844}>
+      <div className="app" data-screen-label={`Uni-Stays · ${tab}`}>
+        {screen}
+        {!openEvent && !openAnnc && !openTicket && !stayScreen && !signedOut && (
+          <TabBar active={tab} onChange={noop} onQuickAction={noop} />
+        )}
+        <Sheet open={!!sheet} onClose={noop}>{sheetContent}</Sheet>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// The print run — each page is one screen.
+const PAGES = [
+  { num: "01", name: "Home dashboard",
+    desc: "Editorial day-counter · Up Next focal card · stay progress · this week · rent · building pulse · Ask Magda concierge",
+    state: { initialTab: "home" } },
+  { num: "02", name: "Event detail · lounge",
+    desc: "Tonight's wine pour in the lounge with motion graphic background and RSVP",
+    state: { openEvent: window.DATA.EVENTS[0] } },
+  { num: "03", name: "Pay December rent",
+    desc: "Line-item breakdown · SEPA · all-inclusive €549",
+    state: { initialTab: "home", sheet: "rent" } },
+  { num: "04", name: "Inbox",
+    desc: "Building announcements + your open maintenance request",
+    state: { initialTab: "messages" } },
+  { num: "05", name: "Maintenance ticket",
+    desc: "Status track from received → on it → sorted, with chat from Magda",
+    state: { openTicket: {
+      id: "t-seed-1",
+      title: "Bathroom door catches when closing",
+      body: "The bathroom door scrapes the frame when I shut it — needs a shave or a hinge adjust. Not urgent, just annoying.",
+      where: "Bathroom",
+      timeAgo: "yesterday",
+      status: "progress",
+      icon: "wrench",
+    } } },
+  { num: "06", name: "Report something",
+    desc: "Quick-pick maintenance form: type, room, description, urgency",
+    state: { initialTab: "home", sheet: "maint" } },
+  { num: "07", name: "Book a space",
+    desc: "Pick a facility · your existing bookings · live slot availability",
+    state: { initialTab: "facility" } },
+  { num: "08", name: "Your stay",
+    desc: "Resident pass · open requests · documents · preferences",
+    state: { initialTab: "stay" } },
+  { num: "09", name: "Resident pass · QR",
+    desc: "Show at the front desk · refreshes every 60 sec",
+    state: { initialTab: "stay", sheet: "pass" } },
+  { num: "10", name: "Notification settings",
+    desc: "Eight toggles across get-a-ping-for, quiet hours, and privacy",
+    state: { initialTab: "stay", stayScreen: "settings" } },
+  { num: "11", name: "Sign out",
+    desc: "Concierge sign-out confirmation + post-signout welcome back",
+    state: { initialTab: "stay", sheet: "signout" } },
+];
+
+function PrintRun() {
+  return (
+    <React.Fragment>
+      {PAGES.map((p) => (
+        <div key={p.num} className="print-page">
+          <div className="print-label">
+            <div className="num">Uni-Stays · {p.num}</div>
+            <div className="name">{p.name}</div>
+            <div className="desc">{p.desc}</div>
+          </div>
+          <div className="print-frame">
+            <StaticFrame {...p.state} />
+          </div>
+        </div>
+      ))}
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<PrintRun />);
+
+// Fire window.print() once fonts + babel + render are settled
+(async function autoPrint() {
+  if (window.__SKIP_AUTOPRINT) return;
+  try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+  } catch (_) {}
+  // Wait until at least one device frame is in the DOM
+  await new Promise((resolve) => {
+    const check = () => {
+      if (document.querySelectorAll(".app").length >= 5) resolve();
+      else setTimeout(check, 120);
+    };
+    check();
+  });
+  // Re-render lucide icons once everything's mounted
+  if (window.lucide?.createIcons) {
+    try { window.lucide.createIcons(); } catch (_) {}
+  }
+  // Extra cushion for any image / icon paint
+  setTimeout(() => { window.print(); }, 700);
+})();
+</script>
+
+</body>
+</html>

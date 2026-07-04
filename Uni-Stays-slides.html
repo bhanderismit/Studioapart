@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Uni-Stays — slides</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="src/styles.css">
+<style>
+  html, body { margin: 0; padding: 0; background: #0e2233; }
+
+  /* The slide stage — locked to 1920×1080, scaled to fit the viewport. */
+  #stage {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: top left;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    background: #f4f0ea;
+    overflow: hidden;
+  }
+  .slide.active { display: block; }
+
+  /* Editorial caption column on the left */
+  .slide-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: 1fr 720px;
+    align-items: center;
+  }
+  .slide-cap {
+    padding: 0 96px;
+    max-width: 760px;
+    justify-self: end;
+  }
+  .slide-num {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: #ff7236;
+  }
+  .slide-name {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: #0e2233;
+    margin: 18px 0 24px;
+    text-wrap: balance;
+  }
+  .slide-desc {
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 22px;
+    line-height: 1.55;
+    color: rgba(14,34,51,0.62);
+    max-width: 540px;
+    text-wrap: pretty;
+  }
+  .slide-mark {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 48px;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    color: #0e2233;
+  }
+  .slide-mark .badge {
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    background: #ff7236;
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 19px;
+    box-shadow: 0 8px 20px -8px rgba(255,114,54,0.7);
+  }
+
+  /* Phone holder on the right — phone is 390×844, scaled up to ~1.12 */
+  .slide-phone {
+    position: relative;
+    height: 100%;
+    display: grid;
+    place-items: center;
+  }
+  .slide-phone .phone-scale {
+    transform: scale(1.14);
+    transform-origin: center;
+  }
+
+  /* Warm paper texture + corner glow on the caption side */
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 14% 18%, rgba(255,114,54,0.07), transparent 38%),
+      radial-gradient(circle at 6% 92%, rgba(14,34,51,0.05), transparent 40%);
+  }
+  /* The phone side gets a soft navy panel to set off the device */
+  .slide-bg-panel {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 760px;
+    background: linear-gradient(150deg, #14283d 0%, #0e2233 100%);
+  }
+  .slide-bg-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 70% 22%, rgba(255,114,54,0.16), transparent 46%),
+      radial-gradient(circle at 30% 88%, rgba(255,255,255,0.05), transparent 40%);
+  }
+
+  /* Dark-screen slides flip the caption panel to dark for contrast */
+  .slide[data-dark="1"] { background: #0b1320; }
+  .slide[data-dark="1"] .slide-name { color: #f4f0ea; }
+  .slide[data-dark="1"] .slide-desc { color: rgba(244,240,234,0.62); }
+  .slide[data-dark="1"] .slide-mark { color: #f4f0ea; }
+  .slide[data-dark="1"] .slide-bg-panel {
+    background: linear-gradient(150deg, #060b14 0%, #0b1320 100%);
+  }
+
+  /* Pause animations so each captured frame is stable */
+  *, *::before, *::after { animation-play-state: paused !important; }
+
+  /* Nav hint (hidden in export via hideSelectors) */
+  .nav-hint {
+    position: fixed;
+    left: 50%; bottom: 16px;
+    transform: translateX(-50%);
+    z-index: 9999;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.5);
+    padding: 7px 14px;
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+  }
+</style>
+</head>
+<body>
+
+<div id="stage-wrap">
+  <div id="stage"><div id="root"></div></div>
+</div>
+<div class="nav-hint">← / →  ·  slide <span id="hint-n">1</span> / <span id="hint-t">1</span></div>
+
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" rx="22" fill="#0e2233"/>
+    <rect x="38" y="24" width="24" height="44" rx="6" fill="#f4f0ea"/>
+    <circle cx="50" cy="46" r="7" fill="#ff7236"/>
+    <text x="50" y="84" font-family="sans-serif" font-size="11" font-weight="800" fill="#ff7236" text-anchor="middle">U</text>
+  </svg>
+</template>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.456.0/dist/umd/lucide.min.js"></script>
+
+<script src="src/data.js"></script>
+
+<script type="text/babel" src="src/ios-frame.jsx"></script>
+<script type="text/babel" src="src/primitives.jsx"></script>
+<script type="text/babel" src="src/Home.jsx"></script>
+<script type="text/babel" src="src/Tabs.jsx"></script>
+<script type="text/babel" src="src/Detail.jsx"></script>
+<script type="text/babel" src="src/Extras.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState } = React;
+
+// A single static screen — mounts the app render tree with seed state.
+function StaticFrame({ initialTab = "home", openEvent = null, openAnnc = null, openTicket = null,
+                       stayScreen = null, sheet = null, dark = false, going = { lounge: true } }) {
+  const { RESIDENT, RENT, PULSE, EVENTS, ANNOUNCEMENTS, FACILITIES, MATES, MAINTENANCE_TYPES } = window.DATA;
+  const noop = () => {};
+  const prefs = {
+    events: true, building: true, rent: false, chat: true,
+    marketing: false, quiet: true, showFloor: true, eventsPublic: true,
+  };
+  const reservations = [{
+    id: "r-seed-1",
+    facility: FACILITIES.find((f) => f.id === "seminar"),
+    time: "16:00",
+    dayLabel: "Wed 24 Nov",
+  }];
+  const tickets = [{
+    id: "t-seed-1",
+    title: "Bathroom door catches when closing",
+    body: "The bathroom door scrapes the frame when I shut it — needs a shave or a hinge adjust. Not urgent, just annoying.",
+    where: "Bathroom", timeAgo: "yesterday", status: "progress", icon: "wrench",
+  }];
+
+  const appBar = (
+    <AppBar resident={RESIDENT} theme={dark ? "dark" : "light"} onToggleTheme={noop}
+      stayDay={RESIDENT.stayDay} stayLength={RESIDENT.stayLength}
+      daysLeft={RESIDENT.stayLength - RESIDENT.stayDay} unread={2} onOpenInbox={noop} />
+  );
+
+  let screen;
+  if (openEvent) {
+    screen = <EventDetail event={openEvent} going={!!going[openEvent.id]} onBack={noop} onRSVP={noop} />;
+  } else if (openTicket) {
+    screen = <TicketDetail ticket={openTicket} onBack={noop} />;
+  } else if (stayScreen === "settings") {
+    screen = <SettingsScreen prefs={prefs} onChange={noop} onBack={noop} theme={dark ? "dark" : "light"} onSetTheme={noop} />;
+  } else if (initialTab === "home") {
+    screen = (
+      <React.Fragment>
+        {appBar}
+        <div className="screen" data-screen-label="Home">
+          <Home resident={RESIDENT} rent={RENT} pulse={PULSE} events={EVENTS}
+            announcements={ANNOUNCEMENTS} facilities={FACILITIES} mates={MATES}
+            reservations={reservations} going={going}
+            onOpenEvent={noop} onOpenAnnouncement={noop} onOpenRent={noop}
+            onOpenFacility={noop} onOpenAllEvents={noop} onOpenMap={noop}
+            onCancelReservation={noop} onTabChange={noop} onWaveMate={noop} />
+        </div>
+      </React.Fragment>
+    );
+  } else if (initialTab === "messages") {
+    screen = (
+      <React.Fragment>
+        {appBar}
+        <div className="screen" data-screen-label="Inbox">
+          <Inbox announcements={ANNOUNCEMENTS} tickets={tickets} onOpen={noop} onOpenTicket={noop} onMarkAllRead={noop} />
+        </div>
+      </React.Fragment>
+    );
+  } else if (initialTab === "facility") {
+    screen = (
+      <React.Fragment>
+        {appBar}
+        <div className="screen" data-screen-label="Book">
+          <Booking facilities={FACILITIES} reservations={reservations} onReserve={noop} onCancel={noop} />
+        </div>
+      </React.Fragment>
+    );
+  } else if (initialTab === "stay") {
+    screen = (
+      <React.Fragment>
+        {appBar}
+        <div className="screen" data-screen-label="Stay">
+          <Stay resident={RESIDENT} rent={RENT} tickets={tickets}
+            onOpenTicket={noop} onOpenPass={noop} onOpenDoc={noop}
+            onOpenSettings={noop} onOpenLanguage={noop} onSignOut={noop} />
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  let sheetContent = null;
+  if (sheet === "rent")       sheetContent = <RentSheet rent={RENT} onPay={noop} onClose={noop} />;
+  else if (sheet === "maint") sheetContent = <MaintenanceSheet types={MAINTENANCE_TYPES} onSubmit={noop} onClose={noop} />;
+  else if (sheet === "pass")  sheetContent = <PassSheet resident={RESIDENT} onClose={noop} />;
+
+  return (
+    <IOSDevice width={390} height={844} dark={dark}>
+      <div className="app" data-theme={dark ? "dark" : "light"}>
+        {screen}
+        {!openEvent && !openTicket && !stayScreen && (
+          <TabBar active={initialTab} onChange={noop} onQuickAction={noop} unread={2} language="en" />
+        )}
+        <Sheet open={!!sheet} onClose={noop}>{sheetContent}</Sheet>
+      </div>
+    </IOSDevice>
+  );
+}
+
+// Slide manifest — one app screen per slide.
+const SLIDES = [
+  { num: "01", name: "A home that knows what's next",
+    desc: "An editorial day-counter, the building's pulse, and an Up Next card that surfaces the single thing the resident should act on right now.",
+    state: { initialTab: "home" } },
+  { num: "02", name: "Tonight in the lounge",
+    desc: "Event detail with a motion-graphic header and one-tap RSVP straight into the stay calendar.",
+    state: { openEvent: window.DATA.EVENTS[0] } },
+  { num: "03", name: "Rent, settled in seconds",
+    desc: "A clear line-item breakdown — all-inclusive €549 over SEPA, with autopay armed so nothing's missed.",
+    dark: false, state: { initialTab: "home", sheet: "rent" } },
+  { num: "04", name: "One inbox for the building",
+    desc: "Announcements from Magda and the resident's own open maintenance request, side by side.",
+    state: { initialTab: "messages" } },
+  { num: "05", name: "Report it, track it",
+    desc: "Maintenance tickets move from received → on it → sorted, with a live thread from the building manager.",
+    state: { openTicket: {
+      id: "t-seed-1", title: "Bathroom door catches when closing",
+      body: "The bathroom door scrapes the frame when I shut it — needs a shave or a hinge adjust. Not urgent, just annoying.",
+      where: "Bathroom", timeAgo: "yesterday", status: "progress", icon: "wrench" } } },
+  { num: "06", name: "Book a space in two taps",
+    desc: "Pick a facility, see live slot availability, and keep your existing bookings in view.",
+    state: { initialTab: "facility" } },
+  { num: "07", name: "Your whole stay, in one place",
+    desc: "Resident pass, open requests, documents and preferences — the lease made legible.",
+    state: { initialTab: "stay" } },
+  { num: "08", name: "A QR pass for the front desk",
+    desc: "Show it at reception — refreshes every sixty seconds, no fumbling for paperwork.",
+    dark: true, state: { initialTab: "stay", sheet: "pass" } },
+  { num: "09", name: "Settle in after dark",
+    desc: "The whole experience in dark mode — same warmth, easier on the eyes for a late-night check-in.",
+    dark: true, state: { initialTab: "home", dark: true } },
+];
+
+function Slide({ s }) {
+  const isDark = !!s.dark;
+  return (
+    <div className="slide" data-dark={isDark ? "1" : "0"}>
+      <div className="slide-bg-panel"></div>
+      <div className="slide-grid">
+        <div className="slide-cap">
+          <div className="slide-num">Uni-Stays · {s.num}</div>
+          <div className="slide-name">{s.name}</div>
+          <div className="slide-desc">{s.desc}</div>
+          <div className="slide-mark">
+            <span className="badge">U</span>
+            Uni-Stays · resident app
+          </div>
+        </div>
+        <div className="slide-phone">
+          <div className="phone-scale">
+            <StaticFrame {...s.state} dark={isDark || s.state.dark} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Deck() {
+  return (
+    <React.Fragment>
+      {SLIDES.map((s) => <Slide key={s.num} s={s} />)}
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Deck />);
+
+// ─── Slide navigation ───────────────────────────────────────
+let __cur = 0;
+function slideEls() { return Array.from(document.querySelectorAll(".slide")); }
+window.goToSlide = function (n) {
+  const els = slideEls();
+  if (!els.length) return;
+  __cur = Math.max(0, Math.min(els.length - 1, n));
+  els.forEach((el, i) => el.classList.toggle("active", i === __cur));
+  const hn = document.getElementById("hint-n");
+  const ht = document.getElementById("hint-t");
+  if (hn) hn.textContent = __cur + 1;
+  if (ht) ht.textContent = els.length;
+};
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") window.goToSlide(__cur + 1);
+  if (e.key === "ArrowLeft") window.goToSlide(__cur - 1);
+});
+
+// Fit the 1920×1080 stage into the viewport (letterbox).
+function fitStage() {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  const sx = window.innerWidth / 1920;
+  const sy = window.innerHeight / 1080;
+  const scale = Math.min(sx, sy);
+  stage.style.transform = `scale(${scale})`;
+  const wrap = document.getElementById("stage-wrap");
+  wrap.style.width = (1920 * scale) + "px";
+  wrap.style.height = (1080 * scale) + "px";
+  wrap.style.margin = "0 auto";
+  wrap.style.position = "absolute";
+  wrap.style.left = "50%";
+  wrap.style.top = "50%";
+  wrap.style.transform = "translate(-50%, -50%)";
+}
+window.addEventListener("resize", fitStage);
+
+// Boot once everything has mounted + fonts are ready.
+(async function boot() {
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (_) {}
+  await new Promise((resolve) => {
+    const check = () => {
+      if (document.querySelectorAll(".slide").length >= SLIDES.length) resolve();
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+  if (window.lucide?.createIcons) { try { window.lucide.createIcons(); } catch (_) {} }
+  fitStage();
+  window.goToSlide(0);
+})();
+</script>
+
+</body>
+</html>
